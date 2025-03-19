@@ -1,0 +1,26 @@
+
+[2025-03-19 12:51:05] - ⚠️ Fall detected! Confidence: 59.92%
+
+[2025-03-19 12:51:14] - ⚠️ Fall detected! Confidence: 39.23%
+
+[2025-03-19 12:51:18] - ⚠️ Fall detected! Confidence: 27.14%
+
+[2025-03-19 12:51:20] - ⚠️ Fall detected! Confidence: 73.11%
+
+[2025-03-19 12:51:23] - ⚠️ Fall detected! Confidence: 37.24%
+
+[2025-03-19 12:51:27] - ⚠️ Fall detected! Confidence: 76.73%
+
+[2025-03-19 12:51:31] - ⚠️ Fall detected! Confidence: 49.23%
+
+[2025-03-19 12:51:33] - ⚠️ Fall detected! Confidence: 49.99%
+
+[2025-03-19 12:51:34] - ⚠️ Fall detected! Confidence: 72.21%
+
+[2025-03-19 12:51:35] - ⚠️ Fall detected! Confidence: 69.4%
+
+[2025-03-19 12:51:38] - ⚠️ Fall detected! Confidence: 46.53%
+
+[2025-03-19 12:51:44] - ⚠️ Fall detected! Confidence: 36.75%
+
+[2025-03-19 12:51:47] - ⚠️ Fall detected! Confidence: 34.05%
