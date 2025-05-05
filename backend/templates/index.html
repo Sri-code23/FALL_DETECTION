@@ -1,43 +1,241 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ESP32 Fall Detection</title>
-    <style>
-        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
-        img { max-width: 100%; height: auto; margin-top: 20px; display: none; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ESP32 Fall Detection</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #121212;
+      color: #ddd;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .container {
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    aside {
+      width: 280px;
+      background-color: #1e1e1e;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 30px;
+    }
+
+    h2, h3 {
+      margin-bottom: 15px;
+      color: #fff;
+    }
+
+    button {
+      background-color: #ff5e5e;
+      color: #fff;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #ff3838;
+    }
+
+    .result, .analytics, img {
+      margin-top: 25px;
+    }
+
+    img {
+      max-width: 100%;
+      height: auto;
+      display: none;
+      border-radius: 12px;
+    }
+
+    .history-item {
+      background-color: #2a2a2a;
+      padding: 12px;
+      border-radius: 10px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .history-info {
+      font-size: 14px;
+    }
+
+    .delete-btn {
+      cursor: pointer;
+      color: #888;
+      font-size: 18px;
+      transition: color 0.3s ease;
+    }
+
+    .delete-btn:hover {
+      color: #ff5e5e;
+    }
+
+    .chart-container {
+      background: #1e1e1e;
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 20px;
+    }
+    .button-group {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+    }
+      
+
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+      }
+
+      aside {
+        width: 100%;
+        height: 200px;
+        overflow-x: auto;
+        display: flex;
+        flex-direction: column;
+      }
+
+      main {
+        padding: 20px;
+      }
+    }
+  </style>
 </head>
 <body>
+<div class="container">
+  <aside>
+    <h3>Detection History</h3>
+    <div id="history"></div>
+  </aside>
+
+  <main>
     <h2>ESP32 Fall Detection System</h2>
+    <div class="button-group">
+        <button type="button" id="detect-btn" onclick="processImage()">📷 Capture & Detect</button>
+        <button type="button" id="live-btn" onclick="window.location.href='/live'">📡 Live Camera</button>
+      </div>
+      
 
-    <button onclick="processImage()">Capture & Detect</button>
+    <div class="result">
+      <h3>Detection Result:</h3>
+      <p id="result">No detection yet.</p>
+    </div>
 
-    <h3>Detection Result:</h3>
-    <p id="result">No detection yet.</p>
+    <div>
+      <h3>Processed Image:</h3>
+      <img id="processedImage" alt="Processed Image">
+    </div>
 
-    <h3>Processed Image:</h3>
-    <img id="processedImage" alt="Processed Image">
+    <div class="analytics">
+      <h3>Analytics Overview:</h3>
+      <div class="chart-container">
+        <canvas id="analyticsChart"></canvas>
+      </div>
+    </div>
+  </main>
+</div>
 
-    <script>
-        function processImage() {
-            fetch("/process")
-                .then(response => response.json())
-                .then(data => {
-                    if (data.error) {
-                        alert(data.error);
-                        return;
-                    }
-                    document.getElementById("result").textContent = 
-                        `Fall Detected: ${data.fall_detected}, Confidence: ${data.confidence}`;
-                    
-                    const processedImage = document.getElementById("processedImage");
-                    processedImage.src = data.processed_image;
-                    processedImage.style.display = "block";
-                })
-                .catch(error => console.error("Error:", error));
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const historyContainer = document.getElementById('history');
+  const resultText = document.getElementById('result');
+  const processedImage = document.getElementById('processedImage');
+  const chartCanvas = document.getElementById('analyticsChart');
+  const chartData = {
+    labels: [],
+    datasets: [{
+      label: 'Confidence',
+      data: [],
+      backgroundColor: '#4ade80'
+    }]
+  };
+
+  const analyticsChart = new Chart(chartCanvas, {
+    type: 'bar',
+    data: chartData,
+    options: {
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { color: '#ddd' },
+          grid: { color: '#333' }
+        },
+        x: {
+          ticks: { color: '#ddd' },
+          grid: { color: '#333' }
         }
-    </script>
+      },
+      plugins: {
+        legend: { labels: { color: '#ddd' } }
+      }
+    }
+  });
+
+  function processImage() {
+    fetch("/process")
+      .then(response => response.json())
+      .then(data => {
+        if (data.error) {
+          alert(data.error);
+          return;
+        }
+
+        resultText.textContent = `Fall Detected: ${data.fall_detected}, Confidence: ${data.confidence}`;
+        processedImage.src = data.processed_image;
+        processedImage.style.display = "block";
+
+        const time = new Date().toLocaleTimeString();
+        addHistory(data.fall_detected, data.confidence, time);
+        updateChart(time, data.confidence);
+      })
+      .catch(error => console.error("Error:", error));
+  }
+
+  function addHistory(fall, confidence, time) {
+    const item = document.createElement('div');
+    item.className = 'history-item';
+    item.innerHTML = `
+      <div class="history-info">
+        <strong>Fall:</strong> ${fall}<br>
+        <strong>Confidence:</strong> ${confidence}<br>
+        <small>${time}</small>
+      </div>
+      <span class="delete-btn" onclick="this.parentElement.remove()">🗑️</span>
+    `;
+    historyContainer.prepend(item);
+  }
+
+  function updateChart(time, confidence) {
+    chartData.labels.push(time);
+    chartData.datasets[0].data.push(confidence);
+    analyticsChart.update();
+  }
+</script>
 </body>
 </html>

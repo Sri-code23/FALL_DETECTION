@@ -1,0 +1,56 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESP32 Fall Detection</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+        img { max-width: 100%; height: auto; margin-top: 20px; display: none; }
+    </style>
+</head>
+<body>
+    <h2>ESP32 Fall Detection System</h2>
+
+    <button onclick="processImage()">Capture & Detect</button>
+
+    <h3>Detection Result:</h3>
+    <p id="result">No detection yet.</p>
+
+    <h3>Processed Image:</h3>
+    <img id="processedImage" alt="Processed Image">
+
+    <script>
+        function processImage() {
+            fetch("/process")
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert(data.error);
+                        return;
+                    }
+                    document.getElementById("result").textContent = 
+                        `Fall Detected: ${data.fall_detected}, Confidence: ${data.confidence}`;
+                    
+                    const processedImage = document.getElementById("processedImage");
+                    processedImage.src = data.processed_image;
+                    processedImage.style.display = "block";
+                })
+                .catch(error => console.error("Error:", error));
+        }
+    </script>
+</body>
+</html>
